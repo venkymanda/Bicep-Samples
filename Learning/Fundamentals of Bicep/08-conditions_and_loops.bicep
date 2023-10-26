@@ -17,6 +17,14 @@ param deployStorageAccount bool
 ])
 param environmentName string
 
+param resourceNames array = [
+  'storageAccount'
+  
+]
+
+
+
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = if (deployStorageAccount) {
   name: 'teddybearstorage'
   location: resourceGroup().location
@@ -61,6 +69,23 @@ resource auditingSettings 'Microsoft.Sql/servers/auditingSettings@2021-11-01-pre
   }
 }
 
+/*
+Below approach can be used to deploy only a particular resource for a deployment in a bicep file
+
+sometimes you dont want to deploy all the resources in a file or want to control it
+
+in this we will override the parametersarray in devops when passing deployment so that 
+only resource thats passed in parameter will be deployed
+*/
+var storageaccount_resourcename='storageAccount_usingconditonal'
+var deploy_storageaccount_resource=contains(resourceNames,storageaccount_resourcename)
+
+resource storageAccount_usingconditonal 'Microsoft.Storage/storageAccounts@2021-09-01' = if (deploy_storageaccount_resource) {
+  name: 'teddybearstoragev2'
+  location: resourceGroup().location
+  kind: 'StorageV2'
+  // ...
+}
 /*
 You might wonder why this code is necessary, 
 because auditingSettings and auditStorageAccount both have the same condition, 
